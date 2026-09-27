@@ -11,20 +11,55 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('login screen is the initial route', (WidgetTester tester) async {
+    await tester.pumpWidget(const ShopApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Ruang Belanja'), findsOneWidget);
+    expect(find.text('Username'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.text('Masuk'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  testWidgets('empty login shows validation errors', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ShopApp());
+    await tester.tap(find.text('Masuk'));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Username wajib diisi'), findsOneWidget);
+    expect(find.text('Password wajib diisi'), findsOneWidget);
+    expect(find.text('Username atau password salah.'), findsOneWidget);
+  });
+
+  testWidgets('specified credentials open the shop', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ShopApp());
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Lucy Naibaho');
+    await tester.enterText(find.byType(TextFormField).at(1), '124240040');
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pilihan untukmu'), findsOneWidget);
+    expect(find.text('Ruang Belanja'), findsOneWidget);
+    expect(find.text('Username'), findsNothing);
+  });
+
+  testWidgets('incorrect credentials are rejected', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ShopApp());
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'mahasiswa');
+    await tester.enterText(find.byType(TextFormField).at(1), 'belajar123');
+    await tester.tap(find.text('Masuk'));
+    await tester.pump();
+
+    expect(find.text('Username tidak sesuai'), findsOneWidget);
+    expect(find.text('Password tidak sesuai'), findsOneWidget);
+    expect(find.text('Username atau password salah.'), findsOneWidget);
   });
 }
